@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 from logging import StreamHandler, getLogger, DEBUG, Formatter
+from os import getenv
 from os.path import realpath, dirname
 from sys import stdout
 
@@ -14,10 +15,13 @@ class Config(Singleton):
         """
         Returns the token from the config file
         """
-        return self._parser.get('credentials', 'token')
+        return getenv('TOKEN', self._parser.get('credentials', 'token'))
 
     @staticmethod
     def _development_formatter():
+        """
+        Configure the development formatter for the logger
+        """
         return Formatter(fmt=('%(asctime)s %(levelname)-5.5s '
                               '[%(name)s:%(lineno)d] %(message)s'),
                          datefmt='%Y-%m-%d %H:%M:%S')

@@ -20,7 +20,7 @@ class NSFW(object):
         try:
             logger.debug('Start analyzing the image')
             _, nsfw = classify(Image.open(self.file_path))
-            return nsfw > 0.7
+            return nsfw > 0.7 # Consider NSFW if ratio is higher than 0.7
         except IOError as e:
             logger.error("Exception with PIL Image: {}".format(e.message))
             return False

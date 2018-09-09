@@ -9,26 +9,30 @@ cfg = Config()
 
 
 class Bot(object):
-    _EMPTY_TEXT = ".{}.".format('\n' * 40)
+    """
+    This class implements the handlers for InquisicionBot
+    """
+    _EMPTY_TEXT = ".{}Imagen +18 arriba.".format('\n' * 40)
 
     @property
     def _dispatcher(self):
+        """
+        Return the dispatcher from the Telegram Updater
+        """
         return self._updater.dispatcher
-
-    @staticmethod
-    def _text_handler(bot, update):
-        """
-        Echoes text to the chat
-        """
-        logger.debug('Receiving text')
-        # update.message.reply_text(update.message.text)
 
     @classmethod
     def _image_handler(cls, bot, update):
+        """
+        This Handler is used to detect image messages. Then the image is
+        downloaded as a bytearray, and passed to the NSFW Helper
+        """
         logger.debug('Receiving image')
         nsfw = NSFW(update.message.photo[1].get_file().download_as_bytearray())
         if nsfw.is_nsfw():
-            update.message.reply_text(cls._EMPTY_TEXT)
+            logger.debug('NSFW image detected')
+            bot.send_message(chat_id=update.message.chat_id,
+                             text=cls._EMPTY_TEXT)
 
     @staticmethod
     def _error_handler(bot, update, error):
@@ -41,10 +45,6 @@ class Bot(object):
         """
         Setup the handlers to be used within the bot
         """
-        # Handle incoming text
-        self._dispatcher.add_handler(
-            MessageHandler(Filters.text, self._text_handler))
-
         # Handle incoming images
         self._dispatcher.add_handler(
             MessageHandler(Filters.photo, self._image_handler))
@@ -60,6 +60,9 @@ class Bot(object):
         self._updater.idle()
 
     def __init__(self):
+        """
+        Constructor for the Bot
+        """
         logger.debug('Starting Bot')
         self._updater = Updater(cfg.token)
         self._configure_handlers()
