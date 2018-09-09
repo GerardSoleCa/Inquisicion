@@ -12,7 +12,7 @@ class Bot(object):
     """
     This class implements the handlers for InquisicionBot
     """
-    _EMPTY_TEXT = ".{}Imagen +18 arriba.".format('\n' * 40)
+    _EMPTY_TEXT = ".{}Nobody expects the Spanish Inquisition".format('\n' * 45)
 
     @property
     def _dispatcher(self):
@@ -21,6 +21,15 @@ class Bot(object):
         """
         return self._updater.dispatcher
 
+    @staticmethod
+    def _get_bytes(message):
+        """
+        Get the byte-array from the photo or the sticker
+        """
+        if len(message.photo):
+            return message.photo[1].get_file().download_as_bytearray()
+        return message.sticker.get_file().download_as_bytearray()
+
     @classmethod
     def _image_handler(cls, bot, update):
         """
@@ -28,11 +37,11 @@ class Bot(object):
         downloaded as a bytearray, and passed to the NSFW Helper
         """
         logger.debug('Receiving image')
-        nsfw = NSFW(update.message.photo[1].get_file().download_as_bytearray())
+        nsfw = NSFW(cls._get_bytes(update.message))
         if nsfw.is_nsfw():
             logger.debug('NSFW image detected')
-            bot.send_message(chat_id=update.message.chat_id,
-                             text=cls._EMPTY_TEXT)
+            bot.send_message(
+                chat_id=update.message.chat_id, text=cls._EMPTY_TEXT)
 
     @staticmethod
     def _error_handler(bot, update, error):
@@ -47,7 +56,8 @@ class Bot(object):
         """
         # Handle incoming images
         self._dispatcher.add_handler(
-            MessageHandler(Filters.photo, self._image_handler))
+            MessageHandler(Filters.photo | Filters.sticker,
+                           self._image_handler))
 
         # Handle errors
         self._dispatcher.add_error_handler(self._error_handler)

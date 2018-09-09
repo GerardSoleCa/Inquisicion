@@ -2,9 +2,6 @@
 
 import os
 import platform
-
-from pip.download import PipSession
-from pip.req import parse_requirements
 from setuptools import setup, find_packages
 
 basedir = os.path.dirname(__file__)
@@ -35,11 +32,6 @@ def get_requirements():
     return 'requirements.txt'
 
 
-def get_dependencies():
-    return [str(ir.req) for ir in parse_requirements(
-        os.path.join(basedir, get_requirements()), session=PipSession())]
-
-
 def get_entry_points():
     return {
         'console_scripts': [
@@ -56,7 +48,6 @@ setup(
     packages=find_packages(exclude=['tests']),
     test_suite='tests',
     dependency_links=[],
-    install_requires=get_dependencies(),
     package_data={'': ['*.json', '*.ini']},
     include_package_data=True,
     entry_points=get_entry_points()
