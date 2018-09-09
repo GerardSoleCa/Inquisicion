@@ -12,7 +12,7 @@ class Bot(object):
     """
     This class implements the handlers for InquisicionBot
     """
-    _EMPTY_TEXT = ".{}Nobody expects the Spanish Inquisition".format('\n' * 45)
+    _EMPTY_TEXT = "🔞{}Nobody expects the Spanish Inquisition".format('\n' * 45)
 
     @property
     def _dispatcher(self):
