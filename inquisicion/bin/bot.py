@@ -12,7 +12,6 @@ class Bot(object):
     """
     This class implements the handlers for InquisicionBot
     """
-    _EMPTY_TEXT = "🔞{}Nobody expects the Spanish Inquisition".format('\n' * 45)
 
     @property
     def _dispatcher(self):
@@ -20,6 +19,14 @@ class Bot(object):
         Return the dispatcher from the Telegram Updater
         """
         return self._updater.dispatcher
+
+    @staticmethod
+    def _nsfw_message(nsfw_ratio):
+        """
+        Returns the interpoled message if the image is NSFW
+        """
+        return ("🔞 nsfweablity of {} {}Nobody expects the "
+                "Spanish Inquisition").format(nsfw_ratio, '\n' * 45)
 
     @staticmethod
     def _get_bytes(message):
@@ -38,10 +45,19 @@ class Bot(object):
         """
         logger.debug('Receiving image')
         nsfw = NSFW(cls._get_bytes(update.message))
-        if nsfw.is_nsfw():
-            logger.debug('NSFW image detected')
+        nsfw.process()
+        if update.effective_chat.type == 'private':
+            logger.debug("({}) NSFW ratio of {}".format(
+                update.effective_user.name, nsfw.nsfw_ratio))
             bot.send_message(
-                chat_id=update.message.chat_id, text=cls._EMPTY_TEXT)
+                chat_id=update.message.chat_id,
+                text="NSFW ratio of {}".format(nsfw.nsfw_ratio))
+        elif nsfw.is_nsfw():
+            logger.debug("({}) NSFW detected of {}".format(
+                update.effective_user.name, nsfw.nsfw_ratio))
+            bot.send_message(
+                chat_id=update.message.chat_id,
+                text=cls._nsfw_message(nsfw.nsfw_ratio))
 
     @staticmethod
     def _error_handler(bot, update, error):

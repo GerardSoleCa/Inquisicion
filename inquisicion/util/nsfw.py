@@ -11,23 +11,29 @@ class NSFW(object):
     """
     Manage the Yahoo NSFW Neural Network
     """
+    NSFW_RATIO = 0.7
 
-    def is_nsfw(self):
+    def process(self):
         """
-        Analyze the given image and return a boolean depending on the results
-        of the neural network
+        Analyze the given image
         """
         try:
             logger.debug('Start analyzing the image')
             img = Image.open(self.file_path)
             img.convert('RGB')
-            _, nsfw = classify(img)
-            return nsfw > 0.7 # Consider NSFW if ratio is higher than 0.7
+            self.sfw_ratio, self.nsfw_ratio = classify(img)
+            logger.debug('Ended analyzing the image')
         except IOError as e:
             logger.error("Exception with PIL Image: {}".format(e.message))
-            return False
+            raise
         finally:
             remove(self.file_path)
+
+    def is_nsfw(self):
+        """
+        Returns True if image is considered NSFW
+        """
+        return self.nsfw_ratio > self.NSFW_RATIO
 
     def __init__(self, image):
         """
@@ -36,3 +42,5 @@ class NSFW(object):
         self.file, self.file_path = mkstemp()
         write(self.file, image)
         close(self.file)
+        self.sfw_ratio = 0
+        self.nsfw_ratio = 0
